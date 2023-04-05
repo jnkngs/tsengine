@@ -3,10 +3,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: './src/index.ts',
-
+    mode: 'development',
     plugins: [
         new HtmlWebpackPlugin({
-          title: 'Output Management',
+          title: 'TS Engine',
         }),
       ],
 
@@ -17,7 +17,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\tsx?$/,
+                test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/,
             }
