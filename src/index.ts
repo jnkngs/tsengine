@@ -1,23 +1,17 @@
-import _ from "lodash";
+import { Engine } from "./engine";
 
-namespace TSE {
 
-  export class Engine {
-    public constructor() {
-      console.log('TS Engine start');
-    }
-  }
-}
-
-function component() {
+/**
+ * Game entry point
+ * @returns void
+ */
+function game() {
     const element = document.createElement('div');
   
-    const e = new TSE.Engine();
-    
-    // Lodash, currently included via a script, is required for this line to work
-    element.innerHTML = _.join(['Hello', 'from engine!'], ' ');
+    const engine = new Engine();
+    engine.start();
   
     return element;
   }
   
-  document.body.appendChild(component());
+  document.body.appendChild(game());
