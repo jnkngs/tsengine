@@ -1,5 +1,8 @@
-import { Engine } from "./engine";
+import { Engine } from "./core/engine";
 
+import './style.css';
+
+const engine = new Engine();
 
 /**
  * Game entry point
@@ -8,10 +11,13 @@ import { Engine } from "./engine";
 function game() {
     const element = document.createElement('div');
   
-    const engine = new Engine();
     engine.start();
   
     return element;
-  }
+}
   
-  document.body.appendChild(game());
+document.body.appendChild(game());
+
+window.onresize = function() {
+  engine.resize();
+}
