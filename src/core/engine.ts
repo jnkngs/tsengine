@@ -78,8 +78,12 @@ void main() {
 
         gl.clear( gl.COLOR_BUFFER_BIT );
         gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
+
+        let positionLocation = this._shader.getAttributeLocation("a_position");
+
+        // Not sure if this is really needed?
         gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(0);
+        gl.enableVertexAttribArray(positionLocation);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
 
         requestAnimationFrame( () => {
@@ -97,11 +101,15 @@ void main() {
         ];
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+        //gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(0);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+        let positionLocation = this._shader.getAttributeLocation("a_position");
+
+
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.disableVertexAttribArray(0);
+        gl.disableVertexAttribArray(positionLocation);
     }
 
 

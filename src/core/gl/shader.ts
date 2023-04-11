@@ -7,6 +7,7 @@ export class Shader {
 
     private _name: string;
     private _program: WebGLProgram;
+    private _attributes: {[name: string]: number} = {};
 
     /*
     * Creates a new shader
@@ -20,6 +21,8 @@ export class Shader {
         let fragmentShader = this.loadShader(fragmentSource, gl.FRAGMENT_SHADER);
 
         this._program = this.createProgram(vertexShader, fragmentShader);
+
+        this.detectAttributes();
     }
 
     /*
@@ -34,6 +37,19 @@ export class Shader {
     */
     public use(): void {
         gl.useProgram(this._program);
+    }
+
+    /*
+    * Gets the location of an attribute by name
+    * @param string - name
+    * @returns number - location of attribute
+    * */
+    public getAttributeLocation(name: string): number {
+        if(this._attributes[name] === undefined) {
+            throw new Error(`Unable to find attribute named ${name} in shader ${this._name}`);
+        }
+
+        return this._attributes[name];
     }
 
     private loadShader(source: string, shaderType: number): WebGLShader {
@@ -69,5 +85,17 @@ export class Shader {
         }
 
         return program;
+    }
+
+    private detectAttributes() {
+        let attributeCount = gl.getProgramParameter(this._program, gl.ACTIVE_ATTRIBUTES);
+        for(let i=0; i<attributeCount; ++i) {
+            let attributeInfo: WebGLActiveInfo = gl.getActiveAttrib(this._program, i)!;
+            if(!attributeInfo) {
+                break;
+            }
+
+            this._attributes[attributeInfo.name] = gl.getAttribLocation(this._program, attributeInfo.name);
+        }
     }
 }
