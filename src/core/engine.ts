@@ -1,5 +1,6 @@
 import { gl, glUtilities } from "./gl/glUtilities";
 import {Shader} from "./gl/shader";
+import {AttributeInfo, GLBuffer} from "./gl/glbuffer";
 
 /**
  * Main Game engine class
@@ -10,7 +11,7 @@ export class Engine {
     // @ts-ignore
     private _shader: Shader;
     // @ts-ignore
-    private _buffer: WebGLBuffer;
+    private _buffer: GLBuffer;
 
     public constructor() {
         console.log('## TS Engine start');
@@ -63,8 +64,11 @@ void main() {
         `;
         let fragmentShaderSource = `
 precision mediump float;
+
+uniform vec4 u_color;
+
 void main() {
-    gl_FragColor = vec4(1.0);
+    gl_FragColor = u_color;
 }
         `;
 
@@ -77,14 +81,13 @@ void main() {
     private loop(): void {
 
         gl.clear( gl.COLOR_BUFFER_BIT );
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
 
-        let positionLocation = this._shader.getAttributeLocation("a_position");
+        // set uniforms
+        let colorPosition = this._shader.getUniformLocation("u_color");
+        gl.uniform4f(colorPosition, 1, 0.5, 0, 1);
 
-        // Not sure if this is really needed?
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(positionLocation);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+	    this._buffer.bind();
+        this._buffer.draw();
 
         requestAnimationFrame( () => {
             this.loop();
@@ -92,7 +95,13 @@ void main() {
     }
 
     private createBuffer(): void {
-        this._buffer = gl.createBuffer()!;
+        this._buffer = new GLBuffer(3);
+
+        let positionAttribute = new AttributeInfo();
+        positionAttribute.location = this._shader.getAttributeLocation("a_position");
+        positionAttribute.offset = 0;
+        positionAttribute.size = 3;
+        this._buffer.addAttributeLocation(positionAttribute);
 
         let vertices = [
             0, 0, 0,
@@ -100,16 +109,9 @@ void main() {
             0.5, 0.5, 0
         ];
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-        //gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(0);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-        let positionLocation = this._shader.getAttributeLocation("a_position");
-
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.disableVertexAttribArray(positionLocation);
+        this._buffer.pushBackData(vertices);
+        this._buffer.upload();
+        this._buffer.unbind();
     }
 
 
