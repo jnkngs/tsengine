@@ -115,7 +115,7 @@ export class Shader {
     }
 
     private detectUniforms() {
-        let uniformCount = gl.getProgramParameter(this._program, gl.ACTIVE_ATTRIBUTES);
+        let uniformCount = gl.getProgramParameter(this._program, gl.ACTIVE_UNIFORMS);
         for(let i=0; i<uniformCount; ++i) {
             let info: WebGLActiveInfo = gl.getActiveUniform(this._program, i)!;
             if(!info) {

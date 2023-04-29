@@ -1,17 +1,22 @@
 import { gl, glUtilities } from "./gl/glUtilities";
 import {Shader} from "./gl/shader";
 import {AttributeInfo, GLBuffer} from "./gl/glbuffer";
+import {Sprite} from "./graphics/sprite";
+import {Matrix4x4} from "./math/matrix4x4";
 
 /**
  * Main Game engine class
  */
 export class Engine {
+    // @ts-ignore
+    private _projection: Matrix4x4;
 
     private _canvas!: HTMLCanvasElement;
     // @ts-ignore
     private _shader: Shader;
+
     // @ts-ignore
-    private _buffer: GLBuffer;
+    private _sprite: Sprite;
 
     public constructor() {
         console.log('## TS Engine start');
@@ -27,14 +32,23 @@ export class Engine {
         } catch( exception: any) {
             console.error( exception );
         }
-        
 
         gl.clearColor(0, 0, 0, 1);
 
         this.loadShaders();
         this._shader.use();
 
-        this.createBuffer();
+        this._projection = Matrix4x4.orthographic(
+            0,
+            this._canvas.width,
+            0,
+            this._canvas.height,
+            -100,
+            100);
+
+        this._sprite = new Sprite("test");
+        this._sprite.load();
+        this._sprite.position.x = 200;
 
         this.resize();
 
@@ -50,7 +64,7 @@ export class Engine {
             this._canvas.width = window.innerWidth;
             this._canvas.height = window.innerHeight;
 
-            gl.viewport(0,0, this._canvas.width, this._canvas.height);
+            gl.viewport(-1,1, -1, 1);
         }
     }
 
@@ -58,8 +72,11 @@ export class Engine {
         let vertexShaderSource = `
 attribute vec3 a_position;
 
+uniform mat4 u_projection;
+uniform mat4 u_model;
+
 void main() {
-    gl_Position = vec4(a_position, 1.0);    
+    gl_Position = u_projection * u_model * vec4(a_position, 1.0);    
 }
         `;
         let fragmentShaderSource = `
@@ -86,33 +103,17 @@ void main() {
         let colorPosition = this._shader.getUniformLocation("u_color");
         gl.uniform4f(colorPosition, 1, 0.5, 0, 1);
 
-	    this._buffer.bind();
-        this._buffer.draw();
+        let projectionPosition = this._shader.getUniformLocation("u_projection");
+        gl.uniformMatrix4fv(projectionPosition, false, new Float32Array(this._projection.data));
+
+        let modelLocation = this._shader.getUniformLocation("u_model");
+        gl.uniformMatrix4fv(modelLocation, false, new Float32Array(Matrix4x4.translation(this._sprite.position).data ));
+
+        this._sprite.draw();
 
         requestAnimationFrame( () => {
             this.loop();
         });
     }
-
-    private createBuffer(): void {
-        this._buffer = new GLBuffer(3);
-
-        let positionAttribute = new AttributeInfo();
-        positionAttribute.location = this._shader.getAttributeLocation("a_position");
-        positionAttribute.offset = 0;
-        positionAttribute.size = 3;
-        this._buffer.addAttributeLocation(positionAttribute);
-
-        let vertices = [
-            0, 0, 0,
-            0,0.5, 0,
-            0.5, 0.5, 0
-        ];
-
-        this._buffer.pushBackData(vertices);
-        this._buffer.upload();
-        this._buffer.unbind();
-    }
-
 
 }
