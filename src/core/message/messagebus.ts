@@ -12,7 +12,7 @@ export class MessageBus {
     }
 
     public static addSubscription(code: string, handler: IMessageHandler) {
-        if(MessageBus._subscriptions[code] !== undefined) {
+        if(MessageBus._subscriptions[code] === undefined) {
             MessageBus._subscriptions[code] = [];
         }
 
